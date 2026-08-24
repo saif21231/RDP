@@ -8,25 +8,32 @@ jobs:
     steps:
     - name: Download & Extract Ngrok
       run: |
-        Invoke-WebRequest https://bin.equinox.io/c/bNyA16gDqcB/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
+        Invoke-WebRequest https://bin.equinox.io/c/bNyA16gDqcB/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip -ErrorAction SilentlyContinue
+        if (!(Test-Path ngrok.zip)) {
+          Invoke-WebRequest https://cdn.ngrok.com/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
+        }
         Expand-Archive ngrok.zip -DestinationPath .
+
     - name: Authenticate Ngrok
       run: .\ngrok.exe config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+
     - name: Enable RDP & Set Password
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" –Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         net user runneradmin AdminP@ss12345
-    - name: Create Tunnel & Print Address
+
+    - name: Start Tunnel & Display Address
       run: |
         Start-Process -FilePath .\ngrok.exe -ArgumentList "tcp 3389"
-        Start-Sleep -Seconds 7
-        $curl = Invoke-RestMethod -Uri http://127.0.0.1:4040/api/tunnels
+        Start-Sleep -Seconds 8
+        $tunnel = Invoke-RestMethod -Uri http://127.0.0.1:4040/api/tunnels
         Write-Host "=========================================="
-        Write-Host "RDP Address  : $($curl.tunnels.public_url)"
+        Write-Host "RDP Address  : $($tunnel.tunnels.public_url)"
         Write-Host "Username     : runneradmin"
         Write-Host "Password     : AdminP@ss12345"
         Write-Host "=========================================="
+
     - name: Keep Alive
       run: |
         $i = 0
