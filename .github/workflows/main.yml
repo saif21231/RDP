@@ -18,21 +18,10 @@ jobs:
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         net user runneradmin AdminP@ss12345
 
-    - name: Start Tunnel & Display Address
+    - name: Start Tunnel & Keep Alive
       run: |
-        Start-Process -FilePath ngrok -ArgumentList "tcp 3389"
-        Start-Sleep -Seconds 8
-        $tunnel = Invoke-RestMethod -Uri http://127.0.0.1:4040/api/tunnels
         Write-Host "=========================================="
-        Write-Host "RDP Address  : $($tunnel.tunnels.public_url)"
-        Write-Host "Username     : runneradmin"
-        Write-Host "Password     : AdminP@ss12345"
+        Write-Host "Username : runneradmin"
+        Write-Host "Password : AdminP@ss12345"
         Write-Host "=========================================="
-
-    - name: Keep Alive
-      run: |
-        $i = 0
-        while ($i -lt 360) {
-          Start-Sleep -Seconds 60
-          $i++
-        }
+        ngrok tcp 3389
