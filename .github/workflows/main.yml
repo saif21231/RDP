@@ -15,10 +15,9 @@ jobs:
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" –Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
-    - name: Create Tunnel
-      run: start ngrok tcp 3389
-    - name: Keep Alive
+    - name: Create Tunnel & Keep Alive
       run: |
+        Start-Process ngrok -ArgumentList "tcp 3389"
         $i = 0
         while ($i -lt 360) {
           Start-Sleep -Seconds 60
