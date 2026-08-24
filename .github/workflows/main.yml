@@ -6,11 +6,13 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - name: Install Ngrok
-      run: winget install ngrok.ngrok --accept-source-agreements --accept-package-agreements
+    - name: Download and Setup Ngrok
+      run: |
+        Invoke-WebRequest -Uri "https://bin.equinox.io/c/bNyA16gDqcB/ngrok-v3-stable-windows-amd64.zip" -OutFile "ngrok.zip"
+        Expand-Archive -Path "ngrok.zip" -DestinationPath "." -Force
 
     - name: Authenticate Ngrok
-      run: ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+      run: .\ngrok.exe config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
 
     - name: Enable RDP & Set Password
       run: |
@@ -20,7 +22,7 @@ jobs:
 
     - name: Start Tunnel & Display Address
       run: |
-        Start-Process -FilePath ngrok -ArgumentList "tcp 3389"
+        Start-Process -FilePath .\ngrok.exe -ArgumentList "tcp 3389"
         Start-Sleep -Seconds 8
         $tunnel = Invoke-RestMethod -Uri http://127.0.0.1:4040/api/tunnels
         Write-Host "=========================================="
